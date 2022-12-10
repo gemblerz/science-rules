@@ -1,22 +1,11 @@
 grammar ScienceRule;
 
 sciencerule
-    : '(' sciencerule ')'                                                      #parenExp
-    | sciencerule SP LOGICAL_OPERATOR SP sciencerule                           #logicalExp
+    : NOT? SP? '(' sciencerule ')'                                                      #parenExp
+    | sciencerule SP LOGICAL_OPERATOR SP sciencerule                                      #logicalExp
     | attrPath SP 'pr'                                                        #presentExp
-    | lhs=sciencerule SP op=( ADD | SUB | MUL | DIV | MOD ) SP rhs=sciencerule       #arithmeticExp
-    | lhs=sciencerule SP op=( EQ | NE | GT | LT | GE | LE | CO ) SP rhs=sciencerule       #compareExp
-    | atom=value                                                            #valueExp
+    | lhs=attrPath SP op=( ADD | SUB | MUL | DIV | MOD ) SP rhs=value       #arithmeticExp
     ;
-
-value
-   : BOOLEAN           #boolean
-   | NULL              #null
-   | STRING            #string
-   | DOUBLE            #double
-   | '-'? INT EXP?     #long
-   | attrPath          #topic
-   ;
 
 ADD: '+';
 SUB: '-';
@@ -24,13 +13,9 @@ MUL: '*';
 DIV: '/';
 MOD: '%';
 
-EQ : 'eq' | 'EQ' | '==';
-NE : 'ne' | 'NE' | '!=';
-GT : 'gt' | 'GT' | '>';
-LT : 'lt' | 'LT' | '<';
-GE : 'ge' | 'GE' | '>=';
-LE : 'le' | 'LE' | '<=';
-CO : 'co' | 'CO';
+NOT
+    : 'not' | 'NOT'
+    ;
 
 LOGICAL_OPERATOR
     : 'and' | 'or'
@@ -67,9 +52,29 @@ fragment ALPHA
    : ( 'A'..'Z' | 'a'..'z' )
    ;
 
+value
+   : BOOLEAN           #boolean
+   | NULL              #null
+   | STRING            #string
+   | DOUBLE            #double
+   | '-'? INT EXP?     #long
+   ;
+
+VERSION
+   : INT '.' INT '.' INT 
+   ;
+
 STRING
    : '"' (ESC | ~ ["\\])* '"'
    ;
+
+listStrings
+   : '[' subListOfStrings
+   ;
+
+subListOfStrings
+   : STRING COMMA subListOfStrings
+   | STRING ']';
 
 fragment ESC
    : '\\' (["\\/bfnrt] | UNICODE)
